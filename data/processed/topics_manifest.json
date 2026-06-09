@@ -1,0 +1,175 @@
+[
+  {
+    "id": "api",
+    "name": "API 参考",
+    "product": "OSS",
+    "doc_count": 1,
+    "tags": [
+      "API",
+      "DeleteObject",
+      "GetObject",
+      "Object",
+      "PutObject"
+    ]
+  },
+  {
+    "id": "上传下载",
+    "name": "上传下载",
+    "product": "OSS",
+    "doc_count": 1,
+    "tags": [
+      "CompleteMultipartUpload",
+      "UploadPart",
+      "分片上传",
+      "大文件",
+      "断点续传"
+    ]
+  },
+  {
+    "id": "产品概念",
+    "name": "产品概念",
+    "product": "OSS",
+    "doc_count": 1,
+    "tags": [
+      "Bucket",
+      "Endpoint",
+      "OSS",
+      "Object",
+      "地域",
+      "对象存储"
+    ]
+  },
+  {
+    "id": "安全与合规",
+    "name": "安全与合规",
+    "product": "OSS",
+    "doc_count": 1,
+    "tags": [
+      "KMS",
+      "SSE",
+      "合规",
+      "数据安全",
+      "服务端加密"
+    ]
+  },
+  {
+    "id": "安全与访问",
+    "name": "安全与访问",
+    "product": "OSS",
+    "doc_count": 1,
+    "tags": [
+      "CORS",
+      "Referer",
+      "浏览器直传",
+      "跨域",
+      "防盗链"
+    ]
+  },
+  {
+    "id": "快速入门",
+    "name": "快速入门",
+    "product": "OSS",
+    "doc_count": 1,
+    "tags": [
+      "上传",
+      "下载",
+      "创建Bucket",
+      "快速入门",
+      "控制台"
+    ]
+  },
+  {
+    "id": "成本优化",
+    "name": "成本优化",
+    "product": "OSS",
+    "doc_count": 1,
+    "tags": [
+      "低频访问",
+      "冷归档",
+      "存储类型",
+      "归档",
+      "成本优化",
+      "生命周期"
+    ]
+  },
+  {
+    "id": "故障排查",
+    "name": "故障排查",
+    "product": "OSS",
+    "doc_count": 2,
+    "tags": [
+      "403",
+      "404",
+      "AccessDenied",
+      "AccessKey",
+      "CanonicalizedResource",
+      "NoSuchBucket",
+      "NoSuchKey",
+      "SignatureDoesNotMatch",
+      "签名",
+      "鉴权",
+      "错误码"
+    ]
+  },
+  {
+    "id": "数据保护",
+    "name": "数据保护",
+    "product": "OSS",
+    "doc_count": 1,
+    "tags": [
+      "DeleteMarker",
+      "数据保护",
+      "版本控制",
+      "误删恢复"
+    ]
+  },
+  {
+    "id": "权限控制",
+    "name": "权限控制",
+    "product": "OSS",
+    "doc_count": 3,
+    "tags": [
+      "ACL",
+      "AssumeRole",
+      "Bucket Policy",
+      "IP限制",
+      "RAM",
+      "STS",
+      "VPC",
+      "临时访问凭证",
+      "安全",
+      "客户端直传",
+      "最小权限",
+      "权限控制",
+      "访问控制",
+      "跨账号授权"
+    ]
+  },
+  {
+    "id": "网站与域名",
+    "name": "网站与域名",
+    "product": "OSS",
+    "doc_count": 1,
+    "tags": [
+      "CDN",
+      "HTTPS",
+      "自定义域名",
+      "错误页",
+      "静态网站",
+      "首页"
+    ]
+  },
+  {
+    "id": "运维监控",
+    "name": "运维监控",
+    "product": "OSS",
+    "doc_count": 1,
+    "tags": [
+      "审计",
+      "日志",
+      "监控",
+      "访问日志",
+      "请求ID"
+    ]
+  }
+]

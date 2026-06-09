@@ -1,0 +1,382 @@
+[
+  {
+    "id": "oss-overview",
+    "title": "OSS 对象存储基础概念",
+    "product": "OSS",
+    "category": "产品概念",
+    "doc_type": "guide",
+    "url": "https://www.alibabacloud.com/help/zh/oss/",
+    "tags": [
+      "OSS",
+      "对象存储",
+      "Bucket",
+      "Object",
+      "Endpoint",
+      "地域"
+    ],
+    "related_apis": [
+      "ListBuckets",
+      "GetBucketInfo"
+    ],
+    "common_errors": [],
+    "summary": "对象存储 OSS 是面向海量非结构化数据的云存储服务，常用于图片、音视频、日志、备份、静态网站资源和数据湖文件。使用 OSS 时需要理解地域、Bucket、Object、Endpoint、访问域名和权限边界。"
+  },
+  {
+    "id": "oss-getting-started",
+    "title": "OSS 快速入门：创建 Bucket 并上传 Object",
+    "product": "OSS",
+    "category": "快速入门",
+    "doc_type": "guide",
+    "url": "https://www.alibabacloud.com/help/zh/oss/getting-started/",
+    "tags": [
+      "快速入门",
+      "创建Bucket",
+      "上传",
+      "下载",
+      "控制台"
+    ],
+    "related_apis": [
+      "PutBucket",
+      "PutObject",
+      "GetObject"
+    ],
+    "common_errors": [
+      "NoSuchBucket",
+      "AccessDenied"
+    ],
+    "summary": "OSS 入门流程通常包括开通服务、创建 Bucket、设置权限、上传 Object、生成访问地址并验证下载。"
+  },
+  {
+    "id": "oss-permission-model",
+    "title": "OSS 权限模型：RAM、Bucket Policy、ACL 与 STS",
+    "product": "OSS",
+    "category": "权限控制",
+    "doc_type": "guide",
+    "url": "https://www.alibabacloud.com/help/zh/oss/user-guide/overview-20/",
+    "tags": [
+      "权限控制",
+      "RAM",
+      "Bucket Policy",
+      "ACL",
+      "STS",
+      "最小权限"
+    ],
+    "related_apis": [
+      "PutBucketPolicy",
+      "GetBucketPolicy",
+      "AssumeRole"
+    ],
+    "common_errors": [
+      "AccessDenied",
+      "InvalidAccessKeyId"
+    ],
+    "summary": "OSS 权限控制通常由 RAM 身份权限、Bucket Policy、ACL、STS 临时凭证和签名 URL 共同组成。企业场景应遵循最小权限原则。"
+  },
+  {
+    "id": "oss-sts-temporary-credentials",
+    "title": "使用 STS 临时访问凭证访问 OSS",
+    "product": "OSS",
+    "category": "权限控制",
+    "doc_type": "guide",
+    "url": "https://www.alibabacloud.com/help/zh/oss/use-cases/use-sts-to-authorize-users-to-access-oss/",
+    "tags": [
+      "STS",
+      "临时访问凭证",
+      "AssumeRole",
+      "客户端直传",
+      "安全"
+    ],
+    "related_apis": [
+      "AssumeRole",
+      "PutObject",
+      "GetObject"
+    ],
+    "common_errors": [
+      "SecurityTokenExpired",
+      "AccessDenied"
+    ],
+    "summary": "STS 通过角色扮演生成临时 AccessKeyId、AccessKeySecret 和 SecurityToken，适合移动端、浏览器端或第三方系统临时访问 OSS。"
+  },
+  {
+    "id": "oss-bucket-policy",
+    "title": "使用 Bucket Policy 管理 OSS 资源访问",
+    "product": "OSS",
+    "category": "权限控制",
+    "doc_type": "guide",
+    "url": "https://www.alibabacloud.com/help/zh/oss/user-guide/bucket-policy/",
+    "tags": [
+      "Bucket Policy",
+      "跨账号授权",
+      "IP限制",
+      "VPC",
+      "访问控制"
+    ],
+    "related_apis": [
+      "PutBucketPolicy",
+      "GetBucketPolicy",
+      "DeleteBucketPolicy"
+    ],
+    "common_errors": [
+      "AccessDenied",
+      "MalformedPolicy"
+    ],
+    "summary": "Bucket Policy 是资源侧访问控制策略，可用于跨账号授权、限制来源 IP、限制 VPC 访问或对特定对象前缀设置允许/拒绝规则。"
+  },
+  {
+    "id": "oss-api-object",
+    "title": "OSS Object API：PutObject、GetObject、DeleteObject",
+    "product": "OSS",
+    "category": "API 参考",
+    "doc_type": "api_reference",
+    "url": "https://api.alibabacloud.com/document/Oss/2019-05-17/PutObject",
+    "tags": [
+      "API",
+      "PutObject",
+      "GetObject",
+      "DeleteObject",
+      "Object"
+    ],
+    "related_apis": [
+      "PutObject",
+      "GetObject",
+      "DeleteObject",
+      "HeadObject"
+    ],
+    "common_errors": [
+      "NoSuchKey",
+      "AccessDenied",
+      "InvalidDigest"
+    ],
+    "summary": "Object API 用于上传、下载、删除和查询对象元数据，是 OSS 程序接入最常用的接口集合。"
+  },
+  {
+    "id": "oss-multipart-upload",
+    "title": "OSS 分片上传与断点续传",
+    "product": "OSS",
+    "category": "上传下载",
+    "doc_type": "guide",
+    "url": "https://www.alibabacloud.com/help/zh/oss/user-guide/multipart-upload/",
+    "tags": [
+      "分片上传",
+      "断点续传",
+      "大文件",
+      "UploadPart",
+      "CompleteMultipartUpload"
+    ],
+    "related_apis": [
+      "InitiateMultipartUpload",
+      "UploadPart",
+      "CompleteMultipartUpload",
+      "AbortMultipartUpload"
+    ],
+    "common_errors": [
+      "InvalidPart",
+      "NoSuchUpload"
+    ],
+    "summary": "大文件上传、弱网环境和需要断点续传的场景应使用分片上传。分片上传由初始化、上传分片、完成合并和异常中止组成。"
+  },
+  {
+    "id": "oss-signature-errors",
+    "title": "OSS 签名鉴权与 SignatureDoesNotMatch 排查",
+    "product": "OSS",
+    "category": "故障排查",
+    "doc_type": "troubleshooting",
+    "url": "https://www.alibabacloud.com/help/zh/oss/support/0002-00000040/",
+    "tags": [
+      "签名",
+      "鉴权",
+      "SignatureDoesNotMatch",
+      "AccessKey",
+      "CanonicalizedResource"
+    ],
+    "related_apis": [
+      "PutObject",
+      "GetObject",
+      "ListObjects"
+    ],
+    "common_errors": [
+      "SignatureDoesNotMatch",
+      "InvalidAccessKeyId",
+      "RequestTimeTooSkewed"
+    ],
+    "summary": "SignatureDoesNotMatch 表示服务端计算出的签名与客户端签名不一致，常见原因包括密钥错误、HTTP 方法不一致、Header 参与签名不一致、资源路径编码不一致或客户端时间偏差。"
+  },
+  {
+    "id": "oss-cors-referer",
+    "title": "OSS 跨域 CORS 与 Referer 防盗链",
+    "product": "OSS",
+    "category": "安全与访问",
+    "doc_type": "guide",
+    "url": "https://www.alibabacloud.com/help/zh/oss/user-guide/cors/",
+    "tags": [
+      "CORS",
+      "跨域",
+      "Referer",
+      "防盗链",
+      "浏览器直传"
+    ],
+    "related_apis": [
+      "PutBucketCors",
+      "GetBucketCors",
+      "PutBucketReferer"
+    ],
+    "common_errors": [
+      "CORSForbidden",
+      "AccessDenied"
+    ],
+    "summary": "浏览器直接访问 OSS 时常遇到跨域和防盗链配置问题。CORS 控制浏览器跨域请求，Referer 防盗链用于限制资源被哪些站点引用。"
+  },
+  {
+    "id": "oss-lifecycle-storage",
+    "title": "OSS 生命周期规则与存储类型",
+    "product": "OSS",
+    "category": "成本优化",
+    "doc_type": "best_practice",
+    "url": "https://www.alibabacloud.com/help/zh/oss/user-guide/lifecycle-rules-based-on-the-last-modified-time/",
+    "tags": [
+      "生命周期",
+      "成本优化",
+      "存储类型",
+      "低频访问",
+      "归档",
+      "冷归档"
+    ],
+    "related_apis": [
+      "PutBucketLifecycle",
+      "GetBucketLifecycle",
+      "DeleteBucketLifecycle"
+    ],
+    "common_errors": [
+      "InvalidArgument"
+    ],
+    "summary": "生命周期规则可按前缀、标签、最后修改时间或分片状态自动转换存储类型或删除对象，用于降低长期保存数据的成本。"
+  },
+  {
+    "id": "oss-static-website-domain",
+    "title": "OSS 静态网站托管与自定义域名",
+    "product": "OSS",
+    "category": "网站与域名",
+    "doc_type": "guide",
+    "url": "https://www.alibabacloud.com/help/zh/oss/user-guide/static-website-hosting/",
+    "tags": [
+      "静态网站",
+      "自定义域名",
+      "HTTPS",
+      "CDN",
+      "首页",
+      "错误页"
+    ],
+    "related_apis": [
+      "PutBucketWebsite",
+      "GetBucketWebsite",
+      "PutCname"
+    ],
+    "common_errors": [
+      "NoSuchKey",
+      "AccessDenied"
+    ],
+    "summary": "OSS 可以托管静态网站资源，并通过自定义域名、HTTPS 证书和 CDN 加速提供访问。"
+  },
+  {
+    "id": "oss-server-side-encryption",
+    "title": "OSS 服务端加密与数据安全",
+    "product": "OSS",
+    "category": "安全与合规",
+    "doc_type": "guide",
+    "url": "https://www.alibabacloud.com/help/zh/oss/user-guide/server-side-encryption/",
+    "tags": [
+      "服务端加密",
+      "KMS",
+      "SSE",
+      "数据安全",
+      "合规"
+    ],
+    "related_apis": [
+      "PutBucketEncryption",
+      "GetBucketEncryption",
+      "PutObject"
+    ],
+    "common_errors": [
+      "KmsServiceNotEnabled",
+      "AccessDenied"
+    ],
+    "summary": "OSS 支持服务端加密，帮助企业在对象写入时自动加密存储，常与 KMS 密钥管理结合满足安全合规要求。"
+  },
+  {
+    "id": "oss-versioning-recycle",
+    "title": "OSS 版本控制与误删恢复",
+    "product": "OSS",
+    "category": "数据保护",
+    "doc_type": "guide",
+    "url": "https://www.alibabacloud.com/help/zh/oss/user-guide/versioning/",
+    "tags": [
+      "版本控制",
+      "误删恢复",
+      "DeleteMarker",
+      "数据保护"
+    ],
+    "related_apis": [
+      "PutBucketVersioning",
+      "GetBucketVersioning",
+      "ListObjectVersions"
+    ],
+    "common_errors": [
+      "NoSuchKey"
+    ],
+    "summary": "版本控制可保存同一 Object 的多个版本，帮助企业应对误删、覆盖和合规留存，但也会增加存储成本。"
+  },
+  {
+    "id": "oss-logging-monitoring",
+    "title": "OSS 日志、监控与请求排查",
+    "product": "OSS",
+    "category": "运维监控",
+    "doc_type": "guide",
+    "url": "https://www.alibabacloud.com/help/zh/oss/user-guide/logging/",
+    "tags": [
+      "日志",
+      "监控",
+      "请求ID",
+      "访问日志",
+      "审计"
+    ],
+    "related_apis": [
+      "PutBucketLogging",
+      "GetBucketLogging"
+    ],
+    "common_errors": [
+      "AccessDenied",
+      "NoSuchKey",
+      "SignatureDoesNotMatch"
+    ],
+    "summary": "OSS 运维排查常依赖请求 ID、访问日志、监控指标和审计记录。生产系统应为关键 Bucket 建立日志与告警。"
+  },
+  {
+    "id": "oss-error-codes",
+    "title": "OSS 常见错误码与处理思路",
+    "product": "OSS",
+    "category": "故障排查",
+    "doc_type": "troubleshooting",
+    "url": "https://www.alibabacloud.com/help/zh/oss/support/error-codes/",
+    "tags": [
+      "错误码",
+      "403",
+      "404",
+      "AccessDenied",
+      "NoSuchBucket",
+      "NoSuchKey"
+    ],
+    "related_apis": [
+      "PutObject",
+      "GetObject",
+      "ListObjects"
+    ],
+    "common_errors": [
+      "AccessDenied",
+      "NoSuchBucket",
+      "NoSuchKey",
+      "InvalidAccessKeyId",
+      "SignatureDoesNotMatch"
+    ],
+    "summary": "OSS 错误排查应从 HTTP 状态码、错误码、RequestId、调用身份、资源路径和权限策略入手。"
+  }
+]

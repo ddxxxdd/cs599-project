@@ -1,0 +1,183 @@
+{
+  "summary": {
+    "total": 10,
+    "intent_accuracy": 1.0,
+    "must_include_accuracy": 1.0,
+    "citation_rate": 1.0
+  },
+  "cases": [
+    {
+      "id": "q01",
+      "question": "OSS 403 AccessDenied 应该怎么排查？",
+      "expected_intent": "troubleshooting",
+      "actual_intent": "troubleshooting",
+      "intent_ok": true,
+      "include_hits": [
+        "AccessDenied",
+        "RAM",
+        "Bucket Policy"
+      ],
+      "include_ok": true,
+      "citation_count": 7,
+      "tool_calls": [
+        "troubleshoot_lookup"
+      ],
+      "answer_preview": "用户问题：OSS 403 AccessDenied 应该怎么排查？\n\n工具结果：[{'name': 'troubleshoot_lookup', 'arguments': {'query': 'OSS 403 AccessDenied 应该怎么排查？'}, 'result': {'matches': [{'id': 'oss-getting-started'"
+    },
+    {
+      "id": "q02",
+      "question": "如何用 STS 临时访问凭证让浏览器上传 OSS？",
+      "expected_intent": "permission",
+      "actual_intent": "permission",
+      "intent_ok": true,
+      "include_hits": [
+        "STS",
+        "临时凭证",
+        "AssumeRole"
+      ],
+      "include_ok": true,
+      "citation_count": 7,
+      "tool_calls": [
+        "permission_lookup"
+      ],
+      "answer_preview": "用户问题：如何用 STS 临时访问凭证让浏览器上传 OSS？\n\n工具结果：[{'name': 'permission_lookup', 'arguments': {'query': '如何用 STS 临时访问凭证让浏览器上传 OSS？'}, 'result': {'matches': [{'id': 'oss-permission-model', 'titl"
+    },
+    {
+      "id": "q03",
+      "question": "RAM Policy 和 Bucket Policy 有什么区别？",
+      "expected_intent": "permission",
+      "actual_intent": "permission",
+      "intent_ok": true,
+      "include_hits": [
+        "RAM Policy",
+        "Bucket Policy"
+      ],
+      "include_ok": true,
+      "citation_count": 7,
+      "tool_calls": [
+        "permission_lookup"
+      ],
+      "answer_preview": "用户问题：RAM Policy 和 Bucket Policy 有什么区别？\n\n工具结果：[{'name': 'permission_lookup', 'arguments': {'query': 'RAM Policy 和 Bucket Policy 有什么区别？'}, 'result': {'matches': [{'id': 'oss-permissi"
+    },
+    {
+      "id": "q04",
+      "question": "SignatureDoesNotMatch 常见原因有哪些？",
+      "expected_intent": "troubleshooting",
+      "actual_intent": "troubleshooting",
+      "intent_ok": true,
+      "include_hits": [
+        "SignatureDoesNotMatch",
+        "签名"
+      ],
+      "include_ok": true,
+      "citation_count": 7,
+      "tool_calls": [
+        "troubleshoot_lookup"
+      ],
+      "answer_preview": "用户问题：SignatureDoesNotMatch 常见原因有哪些？\n\n工具结果：[{'name': 'troubleshoot_lookup', 'arguments': {'query': 'SignatureDoesNotMatch 常见原因有哪些？'}, 'result': {'matches': [{'id': 'oss-signature-er"
+    },
+    {
+      "id": "q05",
+      "question": "PutObject 需要什么权限，什么时候要用分片上传？",
+      "expected_intent": "api_reference",
+      "actual_intent": "api_reference",
+      "intent_ok": true,
+      "include_hits": [
+        "PutObject",
+        "分片上传"
+      ],
+      "include_ok": true,
+      "citation_count": 7,
+      "tool_calls": [
+        "api_lookup"
+      ],
+      "answer_preview": "用户问题：PutObject 需要什么权限，什么时候要用分片上传？\n\n工具结果：[{'name': 'api_lookup', 'arguments': {'query': 'PutObject 需要什么权限，什么时候要用分片上传？'}, 'result': {'matches': [{'id': 'oss-getting-started', 'title'"
+    },
+    {
+      "id": "q06",
+      "question": "OSS 生命周期规则如何降低日志存储成本？",
+      "expected_intent": "cost",
+      "actual_intent": "cost",
+      "intent_ok": true,
+      "include_hits": [
+        "生命周期",
+        "归档"
+      ],
+      "include_ok": true,
+      "citation_count": 7,
+      "tool_calls": [
+        "cost_lookup"
+      ],
+      "answer_preview": "用户问题：OSS 生命周期规则如何降低日志存储成本？\n\n工具结果：[{'name': 'cost_lookup', 'arguments': {'query': 'OSS 生命周期规则如何降低日志存储成本？'}, 'result': {'matches': [{'id': 'oss-overview', 'title': 'OSS 对象存储基础概念', 'p"
+    },
+    {
+      "id": "q07",
+      "question": "浏览器直传 OSS 为什么会出现跨域失败？",
+      "expected_intent": "troubleshooting",
+      "actual_intent": "troubleshooting",
+      "intent_ok": true,
+      "include_hits": [
+        "CORS",
+        "OPTIONS"
+      ],
+      "include_ok": true,
+      "citation_count": 7,
+      "tool_calls": [
+        "troubleshoot_lookup"
+      ],
+      "answer_preview": "用户问题：浏览器直传 OSS 为什么会出现跨域失败？\n\n工具结果：[{'name': 'troubleshoot_lookup', 'arguments': {'query': '浏览器直传 OSS 为什么会出现跨域失败？'}, 'result': {'matches': [{'id': 'oss-cors-referer', 'title': 'OSS 跨"
+    },
+    {
+      "id": "q08",
+      "question": "OSS 静态网站托管访问 404 或 403 怎么排查？",
+      "expected_intent": "troubleshooting",
+      "actual_intent": "troubleshooting",
+      "intent_ok": true,
+      "include_hits": [
+        "静态网站",
+        "403",
+        "404"
+      ],
+      "include_ok": true,
+      "citation_count": 7,
+      "tool_calls": [
+        "troubleshoot_lookup"
+      ],
+      "answer_preview": "用户问题：OSS 静态网站托管访问 404 或 403 怎么排查？\n\n工具结果：[{'name': 'troubleshoot_lookup', 'arguments': {'query': 'OSS 静态网站托管访问 404 或 403 怎么排查？'}, 'result': {'matches': [{'id': 'oss-overview', 'titl"
+    },
+    {
+      "id": "q09",
+      "question": "使用 SSE-KMS 加密上传 OSS 对象需要哪些权限？",
+      "expected_intent": "permission",
+      "actual_intent": "permission",
+      "intent_ok": true,
+      "include_hits": [
+        "KMS",
+        "权限"
+      ],
+      "include_ok": true,
+      "citation_count": 7,
+      "tool_calls": [
+        "permission_lookup"
+      ],
+      "answer_preview": "用户问题：使用 SSE-KMS 加密上传 OSS 对象需要哪些权限？\n\n工具结果：[{'name': 'permission_lookup', 'arguments': {'query': '使用 SSE-KMS 加密上传 OSS 对象需要哪些权限？'}, 'result': {'matches': [{'id': 'oss-permission-model"
+    },
+    {
+      "id": "q10",
+      "question": "OSS 版本控制如何帮助误删恢复？",
+      "expected_intent": "doc_lookup",
+      "actual_intent": "doc_lookup",
+      "intent_ok": true,
+      "include_hits": [
+        "版本控制",
+        "恢复"
+      ],
+      "include_ok": true,
+      "citation_count": 7,
+      "tool_calls": [
+        "doc_lookup"
+      ],
+      "answer_preview": "用户问题：OSS 版本控制如何帮助误删恢复？\n\n工具结果：[{'name': 'doc_lookup', 'arguments': {'query': 'oss-versioning-recycle'}, 'result': {'found': True, 'document': {'id': 'oss-versioning-recycle', 'title"
+    }
+  ]
+}

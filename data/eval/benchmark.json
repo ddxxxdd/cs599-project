@@ -1,0 +1,62 @@
+[
+  {
+    "id": "q01",
+    "question": "OSS 403 AccessDenied 应该怎么排查？",
+    "expected_intent": "troubleshooting",
+    "must_include": ["AccessDenied", "RAM", "Bucket Policy"]
+  },
+  {
+    "id": "q02",
+    "question": "如何用 STS 临时访问凭证让浏览器上传 OSS？",
+    "expected_intent": "permission",
+    "must_include": ["STS", "临时凭证", "AssumeRole"]
+  },
+  {
+    "id": "q03",
+    "question": "RAM Policy 和 Bucket Policy 有什么区别？",
+    "expected_intent": "permission",
+    "must_include": ["RAM Policy", "Bucket Policy"]
+  },
+  {
+    "id": "q04",
+    "question": "SignatureDoesNotMatch 常见原因有哪些？",
+    "expected_intent": "troubleshooting",
+    "must_include": ["SignatureDoesNotMatch", "签名"]
+  },
+  {
+    "id": "q05",
+    "question": "PutObject 需要什么权限，什么时候要用分片上传？",
+    "expected_intent": "api_reference",
+    "must_include": ["PutObject", "分片上传"]
+  },
+  {
+    "id": "q06",
+    "question": "OSS 生命周期规则如何降低日志存储成本？",
+    "expected_intent": "cost",
+    "must_include": ["生命周期", "归档"]
+  },
+  {
+    "id": "q07",
+    "question": "浏览器直传 OSS 为什么会出现跨域失败？",
+    "expected_intent": "troubleshooting",
+    "must_include": ["CORS", "OPTIONS"]
+  },
+  {
+    "id": "q08",
+    "question": "OSS 静态网站托管访问 404 或 403 怎么排查？",
+    "expected_intent": "troubleshooting",
+    "must_include": ["静态网站", "403", "404"]
+  },
+  {
+    "id": "q09",
+    "question": "使用 SSE-KMS 加密上传 OSS 对象需要哪些权限？",
+    "expected_intent": "permission",
+    "must_include": ["KMS", "权限"]
+  },
+  {
+    "id": "q10",
+    "question": "OSS 版本控制如何帮助误删恢复？",
+    "expected_intent": "doc_lookup",
+    "must_include": ["版本控制", "恢复"]
+  }
+]
