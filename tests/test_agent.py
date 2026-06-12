@@ -29,9 +29,16 @@ def test_troubleshooting_question_calls_troubleshoot_tool():
 def test_citations_cover_all_numbered_prompt_sources():
     agent = AliyunOssAgent()
     response = agent.run("OSS 403 AccessDenied 应该怎么排查？")
-    assert len(response.citations) == 7
+    assert len(response.citations) == 5
     assert all(citation.score != 999.0 for citation in response.citations)
-    assert "[7]" in response.answer
+    assert "[5]" in response.answer
+
+
+def test_citations_are_sorted_by_relevance_score():
+    agent = AliyunOssAgent()
+    response = agent.run("OSS 403 AccessDenied 应该怎么排查？")
+    scores = [citation.score for citation in response.citations]
+    assert scores == sorted(scores, reverse=True)
 
 
 def test_api_question_calls_api_tool():

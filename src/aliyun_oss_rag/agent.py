@@ -19,7 +19,10 @@ TROUBLE_TERMS = ("报错", "错误", "失败", "403", "404", "accessdenied", "si
 COST_TERMS = ("费用", "成本", "计费", "生命周期", "低频", "归档", "冷归档", "存储类型")
 DOC_QUESTION_RE = re.compile(r"(怎么|如何|为什么|区别|配置|设置|使用|排查|需要|是什么|有什么|步骤|最佳实践|限制)")
 logger = get_logger(__name__)
-CONTEXT_CHUNK_LIMIT = 7
+# 最终送入提示词并展示为“知识库依据”的片段数（top-5）。
+CONTEXT_CHUNK_LIMIT = 5
+# 混合检索候选池大小：先多召回一些，供工具结果优先级重排后再截断为 CONTEXT_CHUNK_LIMIT。
+RETRIEVAL_CANDIDATE_K = 8
 
 
 class AgentState(TypedDict, total=False):
@@ -98,9 +101,9 @@ class AliyunOssAgent:
         state = self._prepare_response(question)
         yield {
             "type": "status",
-            "content": f"已检索到 {len(state.get('retrieved', []))} 条 OSS 文档片段，正在连接大模型",
+            "content": f"已检索到 {len(state.get('citations', []))} 条 OSS 文档片段，正在连接大模型",
         }
-        yield {"type": "meta", "state": state}
+        yield {"type": "meta", "state": self._public_state(state)}
         answer = ""
         try:
             for event in self.llm.stream_events(state["prompt"]):
@@ -115,8 +118,13 @@ class AliyunOssAgent:
             state["error"] = str(exc)
             yield {"type": "status", "content": "模型接口调用失败，请检查模型配置"}
         state["answer"] = answer
-        yield {"type": "final", "state": state, "content": answer}
+        yield {"type": "final", "state": self._public_state(state), "content": answer}
         logger.info("agent_stream_done intent=%s citations=%s", state["intent"], len(state.get("citations", [])))
+
+    def _public_state(self, state: AgentState) -> AgentState:
+        """剔除 prompt、retrieved 等内部字段：避免向前端泄露完整提示词，并显著减小 SSE 负载。"""
+        internal_keys = {"prompt", "retrieved"}
+        return {key: value for key, value in state.items() if key not in internal_keys}  # type: ignore[return-value]
 
     def _prepare_response(self, question: str) -> AgentState:
         state: AgentState = {"question": question, "tool_calls": []}
@@ -148,7 +156,7 @@ class AliyunOssAgent:
         return state
 
     def _retrieve(self, state: AgentState) -> AgentState:
-        state["retrieved"] = self.retriever.search(state["question"], top_k=8)
+        state["retrieved"] = self.retriever.search(state["question"], top_k=RETRIEVAL_CANDIDATE_K)
         return state
 
     def _tools(self, state: AgentState) -> AgentState:
@@ -180,7 +188,13 @@ class AliyunOssAgent:
 
     def _synthesize(self, state: AgentState) -> AgentState:
         state["retrieved"] = self._prioritized_retrieval(state)
-        context_results = state.get("retrieved", [])[:CONTEXT_CHUNK_LIMIT]
+        # 先按工具优先级选出 top-N 片段，再按相关度从高到低排序；
+        # 引用编号 [1..N] 与前端“知识库依据”因此都按相关度降序展示。
+        context_results = sorted(
+            state.get("retrieved", [])[:CONTEXT_CHUNK_LIMIT],
+            key=lambda item: item[1],
+            reverse=True,
+        )
         citations = []
         for chunk, score in context_results:
             citations.append(
@@ -235,7 +249,7 @@ class AliyunOssAgent:
 
     def _prioritized_retrieval(self, state: AgentState) -> list[tuple[Any, float]]:
         retrieved = list(state.get("retrieved", []))
-        chunk_by_id = {chunk.id: chunk for chunk in self.retriever.chunks}
+        chunk_by_id = self.retriever.chunk_by_id
         score_by_chunk_id = {chunk.id: score for chunk, score in retrieved}
         fallback_score = max(score_by_chunk_id.values(), default=1.0)
         preferred_doc_ids: list[str] = []

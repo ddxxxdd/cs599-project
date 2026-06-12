@@ -33,12 +33,20 @@ class HybridRetriever:
         self.chunks = chunks if chunks is not None else load_jsonl(self.settings.chunks_path, KnowledgeChunk)
         logger.info("knowledge_base_loaded chunks=%s path=%s", len(self.chunks), self.settings.chunks_path)
         self.doc_tokens = [tokenize(" ".join([c.title, c.category, c.section, " ".join(c.tags), c.text])) for c in self.chunks]
+        # 预计算每个 chunk 的词频与文档长度，避免每次查询重复构建 Counter。
+        self.doc_counters = [Counter(tokens) for tokens in self.doc_tokens]
         self.doc_freq: dict[str, int] = defaultdict(int)
         for tokens in self.doc_tokens:
             for token in set(tokens):
                 self.doc_freq[token] += 1
         self.avg_len = sum(len(tokens) for tokens in self.doc_tokens) / max(1, len(self.doc_tokens))
+        self.chunk_by_id = {chunk.id: chunk for chunk in self.chunks}
         self.vector_by_chunk_id = self._load_vector_index()
+        # 预计算向量模长，查询时只需计算点积，降低单次检索开销。
+        self.vector_norms = {
+            chunk_id: math.sqrt(sum(value * value for value in vector)) or 1.0
+            for chunk_id, vector in self.vector_by_chunk_id.items()
+        }
         self.embedding_client = None
         if self.vector_by_chunk_id and self.settings.embedding_configured:
             try:
@@ -76,8 +84,7 @@ class HybridRetriever:
         q_counts = Counter(q_tokens)
         scores: dict[str, float] = {}
         total_docs = len(self.chunks)
-        for chunk, tokens in zip(self.chunks, self.doc_tokens):
-            counts = Counter(tokens)
+        for chunk, tokens, counts in zip(self.chunks, self.doc_tokens, self.doc_counters):
             doc_len = len(tokens) or 1
             score = 0.0
             for token, q_count in q_counts.items():
@@ -101,11 +108,15 @@ class HybridRetriever:
             logger.exception("query_embedding_failed")
             return {}
         query_norm = math.sqrt(sum(value * value for value in query_vector)) or 1.0
+        expected_dim = len(query_vector)
         scores: dict[str, float] = {}
         for chunk_id, vector in self.vector_by_chunk_id.items():
-            vector_norm = math.sqrt(sum(value * value for value in vector)) or 1.0
+            if len(vector) != expected_dim:
+                # 维度不一致（例如更换 Embedding 模型后未重建索引）时跳过，避免产生错误相似度。
+                logger.warning("vector_dim_mismatch chunk_id=%s expected=%s got=%s", chunk_id, expected_dim, len(vector))
+                continue
             dot = sum(left * right for left, right in zip(query_vector, vector))
-            scores[chunk_id] = dot / (query_norm * vector_norm)
+            scores[chunk_id] = dot / (query_norm * self.vector_norms.get(chunk_id, 1.0))
         return scores
 
     def _normalize(self, scores: dict[str, float]) -> dict[str, float]:
@@ -118,8 +129,11 @@ class HybridRetriever:
             return {key: 1.0 for key in scores}
         return {key: (value - min_score) / (max_score - min_score) for key, value in scores.items()}
 
-    def search(self, query: str, top_k: int = 4) -> list[tuple[KnowledgeChunk, float]]:
+    def search(self, query: str, top_k: int = 5) -> list[tuple[KnowledgeChunk, float]]:
         logger.info("rag_search_start top_k=%s query=%s", top_k, query)
+        if not query or not query.strip() or top_k <= 0:
+            logger.warning("rag_search_invalid_input query_empty=%s top_k=%s", not (query and query.strip()), top_k)
+            return []
         if not self.chunks:
             logger.warning("rag_search_empty_index")
             return []
@@ -128,14 +142,17 @@ class HybridRetriever:
         bm25_normalized = self._normalize(bm25_scores)
         vector_normalized = self._normalize(vector_scores)
         candidate_ids = set(bm25_normalized) | set(vector_normalized)
-        chunk_by_id = {chunk.id: chunk for chunk in self.chunks}
         scored = []
         for chunk_id in candidate_ids:
+            chunk = self.chunk_by_id.get(chunk_id)
+            if chunk is None:
+                # 向量索引可能包含已删除/过期 chunk，跳过避免 KeyError。
+                continue
             bm25_part = bm25_normalized.get(chunk_id, 0.0)
             vector_part = vector_normalized.get(chunk_id, 0.0)
             score = 0.45 * bm25_part + 0.55 * vector_part if vector_normalized else bm25_part
             if score > 0:
-                scored.append((chunk_by_id[chunk_id], round(score, 4)))
+                scored.append((chunk, round(score, 4)))
         results = sorted(scored, key=lambda item: item[1], reverse=True)[:top_k]
         logger.info(
             "rag_search_done hits=%s mode=%s top_chunks=%s",

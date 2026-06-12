@@ -90,8 +90,12 @@ def ask_stream(request: AskRequest) -> StreamingResponse:
     logger.info("api_ask_stream question=%s conversation_id=%s", request.question, request.conversation_id)
 
     def events() -> Iterator[str]:
-        for event in agent.stream(request.question):
-            yield _sse_event(event)
+        try:
+            for event in agent.stream(request.question):
+                yield _sse_event(event)
+        except Exception as exc:  # noqa: BLE001 - 流式过程中任何异常都转换为可展示的 final 事件
+            logger.exception("api_ask_stream_failed question=%s", request.question)
+            yield _sse_event({"type": "final", "content": f"生成失败：{exc}", "state": {"error": str(exc)}})
         yield _sse_event({"type": "done"})
 
     return StreamingResponse(

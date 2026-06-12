@@ -12,6 +12,7 @@ import {
   Input,
   Layout,
   List,
+  Modal,
   Space,
   Spin,
   Tag,
@@ -245,7 +246,11 @@ function saveHistory(messages: ChatMessage[]) {
     done: true,
     status: item.done ? item.status : "生成被刷新中断"
   }));
-  window.localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(stableMessages.slice(-30)));
+  try {
+    window.localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(stableMessages.slice(-30)));
+  } catch {
+    // localStorage 被禁用或容量已满时静默忽略，不影响问答功能。
+  }
 }
 
 function evidenceTag(item: ChatMessage) {
@@ -284,6 +289,18 @@ function citationScoreLabel(score?: number) {
   if (typeof score !== "number" || score <= 0 || score >= 100) return "工具命中";
   const value = score >= 10 ? score.toFixed(1) : score.toFixed(2);
   return `相关度 ${value}`;
+}
+
+function sortCitationsByRelevance(citations: Citation[]) {
+  // 展示顺序按相关度从高到低；保留原始引用编号，保证回答中 [n] 的跳转关系不变。
+  return citations
+    .map((citation, index) => ({ citation, number: index + 1 }))
+    .sort((a, b) => {
+      const left = typeof a.citation.score === "number" && a.citation.score < 100 ? a.citation.score : 0;
+      const right = typeof b.citation.score === "number" && b.citation.score < 100 ? b.citation.score : 0;
+      if (right !== left) return right - left;
+      return a.number - b.number;
+    });
 }
 
 function KnowledgeProof({ item }: { item: ChatMessage }) {
@@ -342,6 +359,7 @@ function AppShell() {
   const [topics, setTopics] = useState<TopicItem[]>([]);
   const [selectedDocumentId, setSelectedDocumentId] = useState("");
   const [selectedDocument, setSelectedDocument] = useState<SupportDocument | null>(null);
+  const [documentModalOpen, setDocumentModalOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [question, setQuestion] = useState("OSS 403 AccessDenied 应该怎么排查？");
   const [messages, setMessages] = useState<ChatMessage[]>(initialHistory);
@@ -384,7 +402,12 @@ function AppShell() {
   );
 
   useEffect(() => {
-    setOpenEvidenceKeys(activeMessage?.citations.slice(0, 2).map((citation) => citation.chunk_id) ?? []);
+    // 默认展开相关度最高的前两条知识库依据。
+    setOpenEvidenceKeys(
+      sortCitationsByRelevance(activeMessage?.citations ?? [])
+        .slice(0, 2)
+        .map(({ citation }) => citation.chunk_id)
+    );
   }, [activeMessage?.id, activeMessage?.citations.length]);
 
   const filteredDocuments = useMemo(() => {
@@ -397,6 +420,15 @@ function AppShell() {
         .includes(keyword)
     );
   }, [documents, query]);
+
+  function openDocument(documentId: string) {
+    if (documentId !== selectedDocumentId) {
+      // 切换文档时先清空旧详情，弹窗内显示加载状态而不是上一篇内容。
+      setSelectedDocument(null);
+      setSelectedDocumentId(documentId);
+    }
+    setDocumentModalOpen(true);
+  }
 
   function jumpToCitation(messageId: string, citationNumber: number) {
     const messageItem = messages.find((item) => item.id === messageId);
@@ -464,8 +496,12 @@ function AppShell() {
     for (const rawEvent of events) {
       const line = rawEvent.split("\n").find((item) => item.startsWith("data:"));
       if (!line) continue;
-      const payload = JSON.parse(line.replace(/^data:\s*/, "")) as Record<string, unknown>;
-      if (payload.type !== "done") applyStreamPayload(messageId, payload);
+      try {
+        const payload = JSON.parse(line.replace(/^data:\s*/, "")) as Record<string, unknown>;
+        if (payload.type !== "done") applyStreamPayload(messageId, payload);
+      } catch {
+        // 忽略无法解析的单个 SSE 事件，避免整条流中断。
+      }
     }
     return rest;
   }
@@ -529,7 +565,7 @@ function AppShell() {
 
   return (
     <Layout className="app-shell">
-      <Sider width={320} className="document-sider">
+      <Sider width={300} className="conversation-sider">
         <div className="brand">
           <div className="brand-mark"><Cloud size={22} /></div>
           <div>
@@ -542,38 +578,43 @@ function AppShell() {
           <Tag color="blue">文档 {health?.documents ?? documents.length}</Tag>
           <Tag color="green">Chunks {health?.chunks ?? "--"}</Tag>
           <Tag color="gold">主题 {topics.length || "--"}</Tag>
+          <Tag color="purple">历史 {messages.length}</Tag>
         </div>
 
-        <Input
-          className="document-search"
-          prefix={<Search size={16} />}
-          placeholder="搜索权限、错误码、API、CORS"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
+        <div className="sider-section-title">
+          <History size={15} />
+          <span>对话历史</span>
+        </div>
 
-        <List
-          className="document-list"
-          dataSource={filteredDocuments}
-          renderItem={(item) => (
-            <List.Item
-              className={item.id === selectedDocumentId ? "document-item active" : "document-item"}
-              onClick={() => setSelectedDocumentId(item.id)}
-            >
-              <Space direction="vertical" size={4}>
-                <Space>
-                  <Badge color={item.doc_type === "troubleshooting" ? "#d04f4f" : item.category.includes("权限") ? "#2f6f9f" : "#2f7d32"} />
-                  <Text strong>{item.title}</Text>
-                </Space>
-                <Space size={4} wrap>
-                  <Tag>{item.category}</Tag>
-                  {item.related_apis.slice(0, 2).map((api) => <Tag key={api} color="blue">{api}</Tag>)}
-                  {item.common_errors.slice(0, 1).map((err) => <Tag key={err} color="red">{err}</Tag>)}
-                </Space>
-              </Space>
-            </List.Item>
-          )}
-        />
+        {messages.length === 0 ? (
+          <div className="conversation-empty">
+            <Empty description="暂无历史。发送问题后显示在这里。" />
+          </div>
+        ) : (
+          <div className="conversation-rail" aria-label="对话历史列表">
+            {[...messages].reverse().map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={[
+                  "conversation-item",
+                  item.id === activeMessage?.id ? "active" : "",
+                  item.failed ? "failed" : ""
+                ].filter(Boolean).join(" ")}
+                onClick={() => setActiveMessageId(item.id)}
+              >
+                <span className="conversation-title">{item.question}</span>
+                <span className="conversation-subtitle">{item.status}</span>
+                <span className="conversation-tags">
+                  <Tag color="blue">{intentLabel(item.intent)}</Tag>
+                  {evidenceTag(item)}
+                  <Text type="secondary">{item.createdAt}</Text>
+                  {!item.done && <Spin size="small" />}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </Sider>
 
       <Layout>
@@ -587,32 +628,38 @@ function AppShell() {
               <Tag color={health?.vector_index_enabled ? "cyan" : "default"}>
                 检索 {health?.retrieval_mode === "hybrid_dense_vector_bm25" ? "向量+BM25" : "BM25回退"}
               </Tag>
-              <Tag color="purple">历史 {messages.length}</Tag>
             </Space>
           </Space>
         </Header>
 
         <Content className="workspace">
-          <section className="main-panel">
-            <Card className="composer-card">
-              <Space direction="vertical" size={14} className="full-width">
-                <div className="ask-grid">
-                  <TextArea
-                    value={question}
-                    onChange={(event) => setQuestion(event.target.value)}
-                    autoSize={{ minRows: 3, maxRows: 6 }}
-                    placeholder="输入 OSS 技术支持问题，例如：SignatureDoesNotMatch 怎么排查？"
-                  />
-                  <Button
-                    type="primary"
-                    icon={<Send size={16} />}
-                    disabled={busy || !question.trim()}
-                    loading={busy}
-                    onClick={() => streamAsk(question.trim())}
-                  >
-                    发送
-                  </Button>
+          <section className="chat-panel">
+            <div className="chat-messages">
+              {activeMessage ? (
+                <article className={["chat-thread", activeMessage.failed ? "failed" : ""].filter(Boolean).join(" ")}>
+                  <div className="chat-question-row">
+                    <div className="chat-question-bubble">{activeMessage.question}</div>
+                  </div>
+                  <div className="chat-answer-card">
+                    <MessageStatus item={activeMessage} />
+                    <KnowledgeProof item={activeMessage} />
+                    <div className={activeMessage.failed ? "answer-text answer-text-failed" : "answer-text"}>
+                      {activeMessage.answer
+                        ? renderAnswer(activeMessage.answer, activeMessage.citations, (citationNumber) => jumpToCitation(activeMessage.id, citationNumber))
+                        : activeMessage.status}
+                      {!activeMessage.done && <span className="cursor">|</span>}
+                    </div>
+                  </div>
+                </article>
+              ) : (
+                <div className="chat-empty">
+                  <Empty description="暂无对话。输入 OSS 技术支持问题，或点击下方示例开始。" />
                 </div>
+              )}
+            </div>
+
+            <Card className="composer-card">
+              <Space direction="vertical" size={12} className="full-width">
                 <div className="example-panel">
                   <div className="example-heading">
                     <Text strong>示例问题</Text>
@@ -626,89 +673,69 @@ function AppShell() {
                     ))}
                   </div>
                 </div>
-              </Space>
-            </Card>
-
-            <Card className="history-card" title={<Space><History size={18} />对话历史</Space>}>
-              {messages.length === 0 ? (
-                <Empty description="暂无历史。发送 OSS 技术支持问题后会显示在这里。" />
-              ) : (
-                <div className="history-workbench">
-                  <aside className="conversation-rail" aria-label="对话历史列表">
-                    {[...messages].reverse().map((item) => (
-                      <button
-                      key={item.id}
-                        type="button"
-                        className={[
-                          "conversation-item",
-                          item.id === activeMessage?.id ? "active" : "",
-                          item.failed ? "failed" : ""
-                        ].filter(Boolean).join(" ")}
-                      onClick={() => setActiveMessageId(item.id)}
-                    >
-                        <span className="conversation-title">{item.question}</span>
-                        <span className="conversation-subtitle">{item.status}</span>
-                        <span className="conversation-tags">
-                          <Tag color="blue">{intentLabel(item.intent)}</Tag>
-                          {evidenceTag(item)}
-                          <Text type="secondary">{item.createdAt}</Text>
-                          {!item.done && <Spin size="small" />}
-                        </span>
-                      </button>
-                    ))}
-                  </aside>
-
-                  <section className="answer-detail">
-                    {activeMessage ? (
-                      <article className={["active-answer", activeMessage.failed ? "failed" : ""].filter(Boolean).join(" ")}>
-                        <div className="answer-detail-header">
-                          <div>
-                            <Text type="secondary">当前对话</Text>
-                            <Title level={5}>{activeMessage.question}</Title>
-                          </div>
-                          <MessageStatus item={activeMessage} />
-                        </div>
-                        <KnowledgeProof item={activeMessage} />
-                        <div className={activeMessage.failed ? "answer-text answer-text-failed" : "answer-text"}>
-                          {activeMessage.answer
-                            ? renderAnswer(activeMessage.answer, activeMessage.citations, (citationNumber) => jumpToCitation(activeMessage.id, citationNumber))
-                            : activeMessage.status}
-                          {!activeMessage.done && <span className="cursor">|</span>}
-                        </div>
-                      </article>
-                    ) : (
-                      <Empty description="请选择一条对话" />
-                    )}
-                  </section>
+                <div className="ask-grid">
+                  <TextArea
+                    value={question}
+                    onChange={(event) => setQuestion(event.target.value)}
+                    autoSize={{ minRows: 2, maxRows: 6 }}
+                    placeholder="输入 OSS 技术支持问题，例如：SignatureDoesNotMatch 怎么排查？"
+                    onPressEnter={(event) => {
+                      // Shift+Enter 换行；中文输入法选词回车（isComposing）不触发发送。
+                      if (!event.shiftKey && !event.nativeEvent.isComposing) {
+                        event.preventDefault();
+                        if (!busy && question.trim()) streamAsk(question.trim());
+                      }
+                    }}
+                  />
+                  <Button
+                    type="primary"
+                    icon={<Send size={16} />}
+                    disabled={busy || !question.trim()}
+                    loading={busy}
+                    onClick={() => streamAsk(question.trim())}
+                  >
+                    发送
+                  </Button>
                 </div>
-              )}
+              </Space>
             </Card>
           </section>
 
           <aside className="right-panel">
-            <Card title={<Space><FileText size={18} />OSS 文档详情</Space>} className="document-card">
-              {selectedDocument ? (
-                <Space direction="vertical" size={12} className="full-width">
-                  <div>
-                    <Title level={4}>{selectedDocument.title}</Title>
-                    <Text type="secondary">{selectedDocument.category} · {selectedDocument.doc_type}</Text>
-                  </div>
-                  <Paragraph>{selectedDocument.summary}</Paragraph>
-                  <Space wrap size={6}>
-                    {selectedDocument.tags.slice(0, 8).map((tag) => <Tag key={tag}>{tag}</Tag>)}
-                  </Space>
-                  <Collapse
-                    size="small"
-                    items={(selectedDocument.sections ?? []).map((section) => ({
-                      key: section.heading,
-                      label: `${section.heading} · ${section.kind}`,
-                      children: <Paragraph>{section.content}</Paragraph>
-                    }))}
-                  />
-                  <a href={selectedDocument.url} target="_blank" rel="noreferrer">打开官方来源</a>
-                </Space>
+            <Card title={<Space><FileText size={18} />OSS 知识库</Space>} className="kb-card">
+              <Input
+                className="kb-search"
+                prefix={<Search size={16} />}
+                placeholder="搜索权限、错误码、API、CORS"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                allowClear
+              />
+              {filteredDocuments.length === 0 ? (
+                <Empty description="没有匹配的 OSS 文档" />
               ) : (
-                <Empty description="请选择 OSS 文档" />
+                <List
+                  className="kb-list"
+                  dataSource={filteredDocuments}
+                  renderItem={(item) => (
+                    <List.Item
+                      className={item.id === selectedDocumentId ? "kb-item active" : "kb-item"}
+                      onClick={() => openDocument(item.id)}
+                    >
+                      <Space direction="vertical" size={4}>
+                        <Space>
+                          <Badge color={item.doc_type === "troubleshooting" ? "#d04f4f" : item.category.includes("权限") ? "#2f6f9f" : "#2f7d32"} />
+                          <Text strong>{item.title}</Text>
+                        </Space>
+                        <Space size={4} wrap>
+                          <Tag>{item.category}</Tag>
+                          {item.related_apis.slice(0, 2).map((api) => <Tag key={api} color="blue">{api}</Tag>)}
+                          {item.common_errors.slice(0, 1).map((err) => <Tag key={err} color="red">{err}</Tag>)}
+                        </Space>
+                      </Space>
+                    </List.Item>
+                  )}
+                />
               )}
             </Card>
 
@@ -752,17 +779,17 @@ function AppShell() {
                     size="small"
                     activeKey={openEvidenceKeys}
                     onChange={(keys) => setOpenEvidenceKeys(Array.isArray(keys) ? keys.map(String) : [String(keys)])}
-                    items={activeMessage.citations.map((item, index) => ({
+                    items={sortCitationsByRelevance(activeMessage.citations).map(({ citation: item, number }) => ({
                       key: item.chunk_id,
                       label: (
                         <div
-                          id={citationAnchorId(activeMessage.id, index + 1)}
+                          id={citationAnchorId(activeMessage.id, number)}
                           className={[
                             "citation-evidence-label",
-                            highlightedCitationKey === citationAnchorId(activeMessage.id, index + 1) ? "highlighted" : ""
+                            highlightedCitationKey === citationAnchorId(activeMessage.id, number) ? "highlighted" : ""
                           ].filter(Boolean).join(" ")}
                         >
-                          <span>[{index + 1}] {item.title}</span>
+                          <span>[{number}] {item.title}</span>
                           <Tag color="blue">{item.category ?? "OSS"}</Tag>
                           <Tag>{citationScoreLabel(item.score)}</Tag>
                         </div>
@@ -781,6 +808,44 @@ function AppShell() {
           </aside>
         </Content>
       </Layout>
+
+      <Modal
+        open={documentModalOpen}
+        onCancel={() => setDocumentModalOpen(false)}
+        footer={null}
+        width={760}
+        title={
+          <Space>
+            <FileText size={18} />
+            <span>{selectedDocument?.title ?? "OSS 文档详情"}</span>
+          </Space>
+        }
+      >
+        {selectedDocument ? (
+          <Space direction="vertical" size={12} className="full-width document-modal-body">
+            <Text type="secondary">{selectedDocument.category} · {selectedDocument.doc_type}</Text>
+            <Paragraph>{selectedDocument.summary}</Paragraph>
+            <Space wrap size={6}>
+              {selectedDocument.tags.slice(0, 10).map((tag) => <Tag key={tag}>{tag}</Tag>)}
+            </Space>
+            <Collapse
+              key={selectedDocument.id}
+              size="small"
+              defaultActiveKey={selectedDocument.sections?.[0]?.heading}
+              items={(selectedDocument.sections ?? []).map((section) => ({
+                key: section.heading,
+                label: `${section.heading} · ${section.kind}`,
+                children: <Paragraph>{section.content}</Paragraph>
+              }))}
+            />
+            <a href={selectedDocument.url} target="_blank" rel="noreferrer">打开官方来源</a>
+          </Space>
+        ) : (
+          <div className="document-modal-loading">
+            <Spin tip="正在加载 OSS 文档详情" />
+          </div>
+        )}
+      </Modal>
     </Layout>
   );
 }

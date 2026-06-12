@@ -61,7 +61,11 @@ class LLMClient:
         response = requests.post(self.endpoint, headers=self._headers(), json=self._payload(prompt), timeout=(10, 90))
         response.raise_for_status()
         data = response.json()
-        answer = data["choices"][0]["message"]["content"].strip()
+        choices = data.get("choices") or []
+        content = (choices[0].get("message") or {}).get("content") if choices else None
+        if not content:
+            raise ValueError(f"LLM 响应缺少内容：{json.dumps(data, ensure_ascii=False)[:200]}")
+        answer = content.strip()
         logger.info("llm_generate_done answer_chars=%s", len(answer))
         return answer
 

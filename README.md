@@ -7,14 +7,14 @@
 - 15 份阿里云 OSS 技术支持文档条目，覆盖权限控制、STS、Bucket Policy、Object API、分片上传、签名错误、CORS、防盗链、生命周期、静态网站、服务端加密、版本控制和日志监控。
 - 构建 60 个本地知识库 chunk，支持 Embedding 向量索引 + BM25 的混合检索，并保留官方来源 URL、文档分类、章节和相关度。
 - 支持自然语言问答、文档查询、API 参考、权限配置、故障排查和成本优化意图。
-- 回答会先检索本地 OSS 知识库；配置 Embedding 后使用向量相似度 + BM25 混合召回，未配置时自动回退到 BM25。
+- 回答会先检索本地 OSS 知识库；配置 Embedding 后使用向量相似度 + BM25 混合召回，未配置时自动回退到 BM25。每次回答最多引用 top-5 个相关片段，界面“知识库依据”按相关度从高到低排序。
 - 网页端流式展示检索、模型连接、逐 token 生成、引用依据和工具调用状态。
 - LLM 与 Embedding 均从 `.env` 读取配置，不硬编码密钥；Embedding 配置可以先留空。
 
 ## 技术栈
 
-- 后端：Python 3.13、FastAPI、LangGraph、Pydantic
-- 前端：React、Vite、TypeScript、Ant Design、lucide-react
+- 后端：Python 3.13、FastAPI、LangGraph、Pydantic、Uvicorn
+- 前端：React 19、Vite 7、TypeScript、Ant Design、lucide-react
 - 检索：Embedding 向量索引 + BM25 混合检索，未配置 Embedding 时自动回退
 - 知识库：阿里云 OSS 支持文档摘要、官方来源 URL、benchmark
 - 文档：python-docx 生成 Word 报告
@@ -28,6 +28,9 @@ cs599-project/
 │   ├── raw/aliyun_oss_docs.json
 │   ├── processed/chunks.jsonl
 │   ├── processed/documents_index.json
+│   ├── processed/retrieval_index.json
+│   ├── processed/topics_manifest.json
+│   ├── processed/vector_index.json
 │   └── eval/benchmark.json
 ├── docs/
 │   ├── CS599_大作业报告.docx
@@ -40,12 +43,18 @@ cs599-project/
 │   └── dist/
 ├── scripts/
 │   ├── build_kb.py
+│   ├── check_models.py
 │   ├── evaluate.py
 │   └── make_report_docx.py
 ├── src/aliyun_oss_rag/
 │   ├── agent.py
 │   ├── api.py
+│   ├── config.py
+│   ├── embeddings.py
+│   ├── llm.py
+│   ├── model_checks.py
 │   ├── retrieval.py
+│   ├── schemas.py
 │   └── tools.py
 ├── tests/
 ├── pyproject.toml
@@ -54,7 +63,7 @@ cs599-project/
 
 ## 环境变量
 
-复制 `.env.example` 为 `.env`，填写三项真实模型配置：
+复制 `.env.example` 为 `.env`，至少填写三项真实大模型配置：
 
 ```text
 BASE_URL=https://你的-openai-compatible-host/v1
@@ -65,18 +74,33 @@ EMBEDDING_API_KEY=
 EMBEDDING_MODEL=
 ```
 
-`BASE_URL` 可以填写基础地址、`/v1` 地址或完整 `/v1/chat/completions` 地址。Embedding 三项暂时可以留空；后续填好后重新运行 `uv run python scripts/build_kb.py`，会生成 `data/processed/vector_index.json` 中的真实向量。不要提交 `.env`。
+`BASE_URL` 可以填写基础地址、`/v1` 地址或完整 `/v1/chat/completions` 地址。Embedding 三项是可选配置，留空时系统会使用 BM25 检索回退；填好后重新运行 `uv run python scripts/build_kb.py`，会生成或刷新 `data/processed/vector_index.json` 中的真实向量。不要提交 `.env`。
 
 ## 运行网页
 
 ```powershell
 cd C:\Users\dzp\project\cs599-project
 uv sync --python 3.13
-uv run python scripts/build_kb.py
 uv run uvicorn aliyun_oss_rag.api:app --host 127.0.0.1 --port 8000
 ```
 
 打开 `http://127.0.0.1:8000` 即可使用网页。接口文档在 `http://127.0.0.1:8000/docs`。
+
+仓库已经包含 `data/processed/` 知识库产物和 `frontend/dist/` 前端构建产物。如果修改了 `data/raw/aliyun_oss_docs.json`，或配置/更换了 Embedding 模型，请重新构建知识库：
+
+```powershell
+uv run python scripts/build_kb.py
+```
+
+如果修改了前端代码，或 `frontend/dist/` 不存在，再重新构建前端：
+
+```powershell
+cd C:\Users\dzp\project\cs599-project\frontend
+npm install
+npm run build
+```
+
+FastAPI 会托管 `frontend/dist`，因此后端启动后访问根路径就是网页应用。
 
 ## 模型连通性检查
 
@@ -92,11 +116,29 @@ uv run python scripts/check_models.py
 Invoke-RestMethod http://127.0.0.1:8000/models/status
 ```
 
-如果修改了前端代码，再运行：
+## 主要接口
+
+- `GET /health`：检查服务、知识库和检索模式状态。
+- `GET /models/status`：检查 LLM 与 Embedding 连通性。
+- `POST /ask`：普通问答接口。
+- `POST /ask/stream`：流式问答接口，返回检索状态、模型 token、引用依据和最终回答。
+- `GET /documents`、`GET /documents/{document_id}`：查看知识库文档索引和单篇文档详情。
+- `GET /topics`：查看主题分类。
+- `POST /lookup`：按主题或关键词查询知识库文档。
+
+## 前端开发
+
+如果只改前端，可以单独启动 Vite 开发服务：
 
 ```powershell
 cd C:\Users\dzp\project\cs599-project\frontend
 npm install
+npm run dev
+```
+
+发布或让 FastAPI 托管静态页面前，再运行：
+
+```powershell
 npm run build
 ```
 

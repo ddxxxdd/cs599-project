@@ -28,7 +28,7 @@ flowchart TD
 
 ## 关键设计
 
-- 检索器采用 Embedding 向量相似度 + BM25 的混合召回；当 `.env` 未配置 Embedding 时自动回退到 BM25，保证演示可运行。
+- 检索器采用 Embedding 向量相似度 + BM25 的混合召回；当 `.env` 未配置 Embedding 时自动回退到 BM25，保证演示可运行。检索先召回 8 条候选，经工具结果重排后取 top-5 作为回答上下文与引用，并按相关度降序编号。
 - LangGraph 将意图识别、检索、工具调用、回答合成拆成显式节点。
 - 工具调用包含 `doc_lookup`、`api_lookup`、`permission_lookup`、`troubleshoot_lookup`、`cost_lookup` 和 `topic_lookup`。
 - 每份 OSS 支持文档拆分为概览、操作步骤、权限说明、API 参考、故障排查、成本优化等 chunk。
