@@ -10,6 +10,7 @@ __pycache__/
 .playwright-cli/
 data/processed/*.tmp
 docs/assets/pdf_pages/
+*.docx
 *.log
 dist/
 !frontend/dist/

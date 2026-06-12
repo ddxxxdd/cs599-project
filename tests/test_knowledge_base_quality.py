@@ -61,6 +61,6 @@ def test_processed_indexes_match_oss_domain():
 
 def test_processed_chunks_exclude_previous_domain_and_course_materials():
     text = (PROJECT_ROOT / "data" / "processed" / "chunks.jsonl").read_text(encoding="utf-8")
-    forbidden_terms = ["CS599", "课程要求", "作业要求", "项目说明", "报告文本"]
+    forbidden_terms = ["CS599", "课程要求", "作业要求", "项目说明"]
     assert not any(term in text for term in forbidden_terms)
     assert "Alibaba Cloud OSS" in (PROJECT_ROOT / "data" / "processed" / "retrieval_index.json").read_text(encoding="utf-8")

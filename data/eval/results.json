@@ -18,7 +18,7 @@
         "Bucket Policy"
       ],
       "include_ok": true,
-      "citation_count": 7,
+      "citation_count": 5,
       "tool_calls": [
         "troubleshoot_lookup"
       ],
@@ -36,7 +36,7 @@
         "AssumeRole"
       ],
       "include_ok": true,
-      "citation_count": 7,
+      "citation_count": 5,
       "tool_calls": [
         "permission_lookup"
       ],
@@ -53,7 +53,7 @@
         "Bucket Policy"
       ],
       "include_ok": true,
-      "citation_count": 7,
+      "citation_count": 5,
       "tool_calls": [
         "permission_lookup"
       ],
@@ -70,7 +70,7 @@
         "签名"
       ],
       "include_ok": true,
-      "citation_count": 7,
+      "citation_count": 5,
       "tool_calls": [
         "troubleshoot_lookup"
       ],
@@ -87,7 +87,7 @@
         "分片上传"
       ],
       "include_ok": true,
-      "citation_count": 7,
+      "citation_count": 5,
       "tool_calls": [
         "api_lookup"
       ],
@@ -104,7 +104,7 @@
         "归档"
       ],
       "include_ok": true,
-      "citation_count": 7,
+      "citation_count": 5,
       "tool_calls": [
         "cost_lookup"
       ],
@@ -121,7 +121,7 @@
         "OPTIONS"
       ],
       "include_ok": true,
-      "citation_count": 7,
+      "citation_count": 5,
       "tool_calls": [
         "troubleshoot_lookup"
       ],
@@ -139,7 +139,7 @@
         "404"
       ],
       "include_ok": true,
-      "citation_count": 7,
+      "citation_count": 5,
       "tool_calls": [
         "troubleshoot_lookup"
       ],
@@ -156,7 +156,7 @@
         "权限"
       ],
       "include_ok": true,
-      "citation_count": 7,
+      "citation_count": 5,
       "tool_calls": [
         "permission_lookup"
       ],
@@ -173,7 +173,7 @@
         "恢复"
       ],
       "include_ok": true,
-      "citation_count": 7,
+      "citation_count": 5,
       "tool_calls": [
         "doc_lookup"
       ],

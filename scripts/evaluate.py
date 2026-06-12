@@ -54,25 +54,6 @@ def main() -> None:
     results_path = PROJECT_ROOT / "data" / "eval" / "results.json"
     results_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    md_lines = [
-        "# 测试与评估报告",
-        "",
-        "本评估用于课程项目自测，覆盖阿里云 OSS 技术支持问答、权限配置、API 参考、故障排查和成本优化，检查意图识别、关键字段覆盖和引用覆盖。",
-        "",
-        f"- 样例数：{summary['total']}",
-        f"- 意图识别准确率：{summary['intent_accuracy']}",
-        f"- 关键字段覆盖率：{summary['must_include_accuracy']}",
-        f"- 引用覆盖率：{summary['citation_rate']}",
-        "",
-        "| ID | 问题 | 期望意图 | 实际意图 | 关键字段通过 | 引用数 |",
-        "|---|---|---|---|---:|---:|",
-    ]
-    for row in rows:
-        md_lines.append(
-            f"| {row['id']} | {row['question']} | {row['expected_intent']} | {row['actual_intent']} | {row['include_ok']} | {row['citation_count']} |"
-        )
-    report_path = PROJECT_ROOT / "docs" / "evaluation_report.md"
-    report_path.write_text("\n".join(md_lines), encoding="utf-8")
     print(json.dumps(summary, ensure_ascii=False, indent=2))
 
 

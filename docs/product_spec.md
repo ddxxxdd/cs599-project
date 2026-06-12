@@ -30,7 +30,7 @@ Aliyun OSS Support RAG：阿里云对象存储技术支持问答智能体。
 
 - 覆盖不少于 10 份 OSS 支持文档条目。
 - 知识库构建后不少于 50 个 chunk。
-- RAG 检索数据只包含 OSS 技术支持知识和官方来源 URL，不包含课程要求或报告文本。
+- RAG 检索数据只包含 OSS 技术支持知识和官方来源 URL，不包含课程要求或项目说明。
 - benchmark 覆盖权限、API、故障排查、成本优化和访问配置。
 - API 支持 `/ask/stream`、`/documents`、`/documents/{id}`、`/topics` 和 `/lookup`。
 - FastAPI 托管 React/Vite 构建后的网页，正式演示只需访问根地址。

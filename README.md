@@ -17,7 +17,6 @@
 - 前端：React 19、Vite 7、TypeScript、Ant Design、lucide-react
 - 检索：Embedding 向量索引 + BM25 混合检索，未配置 Embedding 时自动回退
 - 知识库：阿里云 OSS 支持文档摘要、官方来源 URL、benchmark
-- 文档：python-docx 生成 Word 报告
 - 测试：pytest 与 benchmark 评估脚本
 
 ## 目录结构
@@ -33,19 +32,16 @@ cs599-project/
 │   ├── processed/vector_index.json
 │   └── eval/benchmark.json
 ├── docs/
-│   ├── CS599_大作业报告.docx
 │   ├── product_spec.md
 │   ├── architecture.md
-│   ├── api_spec.md
-│   └── evaluation_report.md
+│   └── api_spec.md
 ├── frontend/
 │   ├── src/
 │   └── dist/
 ├── scripts/
 │   ├── build_kb.py
 │   ├── check_models.py
-│   ├── evaluate.py
-│   └── make_report_docx.py
+│   └── evaluate.py
 ├── src/aliyun_oss_rag/
 │   ├── agent.py
 │   ├── api.py
@@ -153,7 +149,7 @@ npm run build
 - 安全与运维：Referer 防盗链、服务端加密、版本控制、日志、监控。
 - 成本优化：生命周期规则、低频、归档、冷归档和未完成分片清理。
 
-注意：课程要求、项目说明、报告文本不会写入 RAG 知识库；`chunks.jsonl` 只包含 OSS 技术支持知识和官方来源 URL。
+注意：课程要求和项目说明不会写入 RAG 知识库；`chunks.jsonl` 只包含 OSS 技术支持知识和官方来源 URL。
 
 ## 测试与评估
 
@@ -162,15 +158,4 @@ uv run pytest
 uv run python scripts/evaluate.py
 ```
 
-评估结果写入：
-
-- `data/eval/results.json`
-- `docs/evaluation_report.md`
-
-## 报告
-
-```powershell
-uv run python scripts/make_report_docx.py
-```
-
-报告路径：`docs/CS599_大作业报告.docx`。封面中的姓名、学号、专业为占位信息，正式提交前请替换为真实信息。
+评估结果写入 `data/eval/results.json`。

@@ -32,7 +32,7 @@ flowchart TD
 - LangGraph 将意图识别、检索、工具调用、回答合成拆成显式节点。
 - 工具调用包含 `doc_lookup`、`api_lookup`、`permission_lookup`、`troubleshoot_lookup`、`cost_lookup` 和 `topic_lookup`。
 - 每份 OSS 支持文档拆分为概览、操作步骤、权限说明、API 参考、故障排查、成本优化等 chunk。
-- RAG 知识库只包含 OSS 技术支持知识和官方来源 URL；课程要求、项目说明和报告文本不进入检索数据。
+- RAG 知识库只包含 OSS 技术支持知识和官方来源 URL；课程要求和项目说明不进入检索数据。
 - React 页面由 FastAPI 托管，正式演示只需要启动一个后端进程并访问 `http://127.0.0.1:8000`。
 - `/ask/stream` 以 SSE 发送 `status`、`meta`、`token`、`final` 和 `done` 事件，Web 页面据此展示生成状态和逐 token 回答。
 - 引用结果包含 chunk id、来源、检索分数、文档分类和片段摘要，Web 端展示“知识库依据”区域，让用户确认回答来自本地 OSS 文档知识库。
